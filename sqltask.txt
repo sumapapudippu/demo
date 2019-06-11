@@ -1,0 +1,171 @@
+-- Create `organization` table
+CREATE TABLE `organization` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `short_name` varchar(16) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `description` varchar(2048) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `time_zone_name` varchar(64) COLLATE utf8mb4_unicode_520_ci NOT NULL DEFAULT 'America/Chicago',
+  `enabled` bit(1) NOT NULL DEFAULT b'0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `org_uq_name` (`name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci COMMENT='{"short_name": "org"}';
+
+-- Create `organization` records
+INSERT INTO `organization`
+  (`name`,`short_name`,`enabled`)
+VALUES
+  ('AffinityX','AFX',TRUE) ,
+  ('Test Organization 1','TEST1',TRUE) ,
+  ('Test Organization 2','TEST2',TRUE);
+
+-- Create `user_profile` table
+CREATE TABLE `user_profile` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(64) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `first_name` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `middle_name` varchar(32) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `last_name` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `organization_id` int(11) NOT NULL,
+  `last_used_time` datetime(6) DEFAULT NULL,
+  `enabled` bit(1) NOT NULL,
+  `creation_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uprf_uq_username` (`username`) USING BTREE,
+  KEY `organization_id` (`organization_id`),
+  CONSTRAINT `uprf_fk_organization_id` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci COMMENT='{"short_name": "uprf"}';
+
+-- Create `user_profile` records
+INSERT INTO `user_profile`
+  (`username`,`first_name`,`middle_name`,`last_name`,`organization_id`,`last_used_time`,`enabled`)
+VALUES
+  ('Johnny Boy','John','Alexander','Stockard',(SELECT `id` FROM `organization` WHERE `name` = 'AffinityX'),'2019-01-04 09:08:42.260720',TRUE),
+  ('Brando','Brandon',NULL,'Worby',(SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),'2019-02-04 09:08:42.260720',TRUE),
+  ('Romeo G.','Romeo',NULL,'Giron',(SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),'2019-03-02 09:08:42.260720',TRUE),
+  ('Kory S.','Kory',NULL,'Sarnelli',(SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),'2019-04-02 09:08:42.260720',TRUE),
+  ('Sam P. Leuser','Sam',NULL,'Leuser',(SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),'2019-04-02 09:08:42.260720',TRUE);
+
+-- Create `business` table
+CREATE TABLE `business` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `description` varchar(2048) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `organization_id` int(11) NOT NULL,
+  `account_number` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `email_address` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `phone_number` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `website_url` varchar(128) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_postal_code` varchar(32) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_country` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_state` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_city` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_street_address_1` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `location_street_address_2` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `enabled` bit(1) NOT NULL,
+  `creation_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `b_uq_account_number` (`account_number`) USING BTREE,
+  KEY `organization_id` (`organization_id`),
+  CONSTRAINT `b_fk_organization_id` FOREIGN KEY (`organization_id`) REFERENCES `organization` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci COMMENT='{"short_name": "b"}';
+
+-- Create `business` records
+ INSERT INTO `business`
+   (`name`,`description`,`organization_id`,`account_number`,`email_address`,`phone_number`,`website_url`,`location_postal_code`,`location_country`,`location_state`,`location_city`,`location_street_address_1`,`location_street_address_2`,`enabled`)
+VALUES
+  ('Lord Greyson''s Cat Shoppe SKC',NULL,(SELECT `id` FROM `organization` WHERE `name` = 'AffinityX'),'ABCDEFG1234567','rgiron@affinityx.com','555-555-5555','www.lordgerysonscatshoppe.com/skc',NULL,NULL,NULL,NULL,NULL,NULL,TRUE),
+  ('Sloppy Joe Meats',NULL,( SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),'XYZ987654','eric.shans@gmail.com','9083478002',NULL,NULL,NULL,NULL,NULL,NULL,NULL,TRUE),
+  ('Joe''s Tavern',NULL,( SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),'DJHGOE797857','joe@joestavern.com','9734937710','www.joestavern.com',NULL,NULL,NULL,NULL,NULL,NULL,TRUE),
+  ('Eric''s Doughnuts',NULL,( SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),'YUTDBE89066','edoughnuts@yahoo.com','666-6666',NULL,NULL,NULL,NULL,NULL,NULL,NULL,TRUE);
+
+-- Create `order_status` table
+CREATE TABLE `order_status` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `display_name` varchar(128) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `description` varchar(256) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `technical_description` varchar(1024) COLLATE utf8mb4_unicode_520_ci DEFAULT NULL,
+  `completion_percentage` decimal(3,2) NOT NULL DEFAULT '0.00',
+  `enabled` bit(1) NOT NULL DEFAULT b'0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `os_uq_name` (`name`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci COMMENT='{"short_name": "os"}';
+
+-- Create `order_status` records
+INSERT INTO `order_status`( `name`,`display_name`,`description`, `completion_percentage`,`enabled`)
+VALUES
+  ('saved_for_later','Saved For Later','The order is pending confirmation.',0.25,TRUE),
+  ('confirmed','Confirmed','The order has been confirmed.',0.25,TRUE),
+  ('submitted','Submitted','The order has been communicated to the production system.',0.25,TRUE),
+  ('in_progress','In Progress','Production has begun for one or more items in the order.',0.50,TRUE),
+  ('completed','Completed','All items in the order have been completed.',1.00,TRUE),
+  ('canceled','Canceled','All items in the order have been canceled.',0.00,TRUE),
+  ('action_required','Action Required','One or more items in the order require action.',0.75,TRUE);
+
+-- Create `order` table
+CREATE TABLE `order` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `organization_id` int(11) NOT NULL,
+  `business_id` int(11) NOT NULL,
+  `number` varchar(32) COLLATE utf8mb4_unicode_520_ci NOT NULL,
+  `order_status_id` int(11) NOT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `sales_user_profile_id` int(11) DEFAULT NULL,
+  `confirmed` bit(1) NOT NULL,
+  `completed` bit(1) NOT NULL DEFAULT b'0',
+  `canceled` bit(1) NOT NULL DEFAULT b'0',
+  `enabled` bit(1) NOT NULL DEFAULT b'0',
+  `creation_time` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `o_uq_organization_id$number` (`organization_id`,`number`),
+  KEY `organization_id` (`organization_id`),
+  KEY `business_id` (`business_id`),
+  KEY `order_status_id` (`order_status_id`),
+  KEY `sales_user_profile_id` (`sales_user_profile_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci COMMENT='{"short_name": "o"}';
+
+
+-- Create `order` records
+INSERT INTO `order`
+  (`organization_id`,`business_id`,`number`,`order_status_id`,`start_date`,`end_date`,`sales_user_profile_id`,`confirmed`,`completed`,`canceled`,`enabled`)
+VALUES
+  ((SELECT `id` FROM `organization` WHERE `name` = 'AffinityX'),(SELECT `id` FROM `business` WHERE `account_number` = 'ABCDEFG1234567'),'0000012345',(SELECT `id` FROM `order_status` WHERE `name` = 'saved_for_later'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'johnnyboy'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),(SELECT `id` FROM `business` WHERE `account_number` = 'YUTDBE89066'),'0000012346',(SELECT `id` FROM `order_status` WHERE `name` = 'confirmed'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'romeog'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),(SELECT `id` FROM `business` WHERE `account_number` = 'XYZ987654'),'0000012347',(SELECT `id` FROM `order_status` WHERE `name` = 'saved_for_later'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'johnnyboy'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),(SELECT `id` FROM `business` WHERE `account_number` = 'YUTDBE89066'),'0000012348',(SELECT `id` FROM `order_status` WHERE `name` = 'confirmed'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'johnnyboy'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'AffinityX'),(SELECT `id` FROM `business` WHERE `account_number` = 'ABCDEFG1234567'),'0000012349',(SELECT `id` FROM `order_status` WHERE `name` = 'action_required'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'sampleuser'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),(SELECT `id` FROM `business` WHERE `account_number` = 'DJHGOE797857'),'0000012350',(SELECT `id` FROM `order_status` WHERE `name` = 'saved_for_later'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'brando'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),(SELECT `id` FROM `business` WHERE `account_number` = 'YUTDBE89066'),'0000012351',(SELECT `id` FROM `order_status` WHERE `name` = 'completed'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'romeog'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 1'),(SELECT `id` FROM `business` WHERE `account_number` = 'YUTDBE89066'),'0000012352',(SELECT `id` FROM `order_status` WHERE `name` = 'action_required'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'korys'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),(SELECT `id` FROM `business` WHERE `account_number` = 'XYZ987654'),'0000012353',(SELECT `id` FROM `order_status` WHERE `name` = 'completed'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'sampleuser'),TRUE,FALSE,FALSE,TRUE),
+  ((SELECT `id` FROM `organization` WHERE `name` = 'Test Organization 2'),(SELECT `id` FROM `business` WHERE `account_number` = 'DJHGOE797857'),'00000123',(SELECT `id` FROM `order_status` WHERE `name` = 'confirmed'),'2019-01-01','2019-12-31',(SELECT `id` FROM `user_profile` WHERE `username` = 'korys'),TRUE,FALSE,FALSE,TRUE);
+
+
+
+
+
+
+################################################################################
+#### This test is designed to evaluate an interview candidate's             ####
+#### ability to comprehend database schemas and determine query writing     ####
+#### proficiency. Please format responses neatly using upper case keywords  ####
+#### and encapsulate all table/column names in tick marks (`) per standard  ####
+#### MySQL convention.                                                      ####
+####                                                                        ####
+#### The test schema contains 5 tables each containing sample data.         ####
+#### DDL for the tables is provided to help interview candidates visualize  ####
+#### the data model.                                                        ####
+################################################################################
+
+-- Task #1: Write a single query to return all `order` records joining relevant `business`, `organization`, `order_status` and `user_profile` records
+
+-- Task #2: Write queries to create a new `business` and `order` record, followed by a query to return the newly created `order` record joining the relevant `business` record.
+
+-- Task #3: Write a single query to set `enabled` to false for all `user_profile` records last used more than 3 months ago
+
+-- Task #4: Write a single query to delete all `order` records which have an `order_status` with a `completion_percentage` less than 75%
+
+-- Extra Credit #1: Write a single query to return a single JSON array containing each `business` record as a JSON object. Each JSON object should contain the `id` and `name` of the business.
+
+-- Extra Credit #2: Write a single query to return a single JSON array containing each `order` record as a JSON object. Include as much nested detail as possible (`organization` details, `business` details, `order_status`, `user_profile` details, etc.) in each object. Key names in the objects should match the column names of their respective tables.
